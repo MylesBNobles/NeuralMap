@@ -1,19 +1,20 @@
 import { useRef, useState } from 'react';
-import { Mesh } from 'three';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useLoader } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
+import * as THREE from 'three';
 import { useUIStore } from '../../store/uiStore';
 import { useGraphStore } from '../../store/graphStore';
 import type { Neuron as NeuronType } from '../../types';
+import neuronSprite from '../../assets/neuron-sprite.png';
 
 interface NeuronProps {
   neuron: NeuronType;
 }
 
 export function Neuron({ neuron }: NeuronProps) {
-  const meshRef = useRef<Mesh>(null);
-  const glowRef = useRef<Mesh>(null);
+  const spriteRef = useRef<THREE.Sprite>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const texture = useLoader(THREE.TextureLoader, neuronSprite);
 
   const selectedNeuronId = useUIStore((state) => state.selectedNeuronId);
   const hoveredNeuronId = useUIStore((state) => state.hoveredNeuronId);
@@ -23,13 +24,16 @@ export function Neuron({ neuron }: NeuronProps) {
   const isSelected = selectedNeuronId === neuron.id;
   const isHighlighted = hoveredNeuronId === neuron.id || isSelected;
 
-  // Pulse animation
+  // Pulse animation for the sprite
   useFrame((state) => {
-    if (meshRef.current && glowRef.current) {
-      const pulse = Math.sin(state.clock.elapsedTime * 2) * 0.1 + 0.9;
-      const scale = isHighlighted ? 1.2 : 1.0;
-      meshRef.current.scale.setScalar(scale * pulse);
-      glowRef.current.scale.setScalar(scale * 1.3 * pulse);
+    if (spriteRef.current) {
+      const pulse = Math.sin(state.clock.elapsedTime * 1.5) * 0.1 + 1.0;
+      const scale = isHighlighted ? 1.3 : 1.0;
+      spriteRef.current.scale.setScalar(scale * pulse);
+
+      // Update material opacity for highlight effect
+      const material = spriteRef.current.material as THREE.SpriteMaterial;
+      material.opacity = isHighlighted ? 1.0 : 0.9;
     }
   });
 
@@ -53,41 +57,32 @@ export function Neuron({ neuron }: NeuronProps) {
 
   return (
     <group position={[position.x, position.y, position.z]}>
-      {/* Outer glow */}
-      <mesh ref={glowRef}>
-        <sphereGeometry args={[0.15, 32, 32]} />
-        <meshBasicMaterial
-          color="#818cf8"
-          transparent
-          opacity={isHighlighted ? 0.4 : 0.2}
-        />
-      </mesh>
-
-      {/* Main neuron sphere */}
-      <mesh
-        ref={meshRef}
+      {/* Neuron sprite using the image */}
+      <sprite
+        ref={spriteRef}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
         onClick={handleClick}
+        scale={[1.2, 1.2, 1]}
       >
-        <sphereGeometry args={[0.1, 32, 32]} />
-        <meshStandardMaterial
-          color="#6366f1"
-          emissive="#6366f1"
-          emissiveIntensity={isHighlighted ? 1.5 : 0.5}
-          metalness={0.8}
-          roughness={0.2}
+        <spriteMaterial
+          map={texture}
+          transparent
+          opacity={0.9}
+          depthWrite={false}
         />
-      </mesh>
+      </sprite>
 
       {/* Label (show on hover or when selected) */}
       {(isHovered || isSelected) && (
         <Text
-          position={[0, 0.25, 0]}
-          fontSize={0.12}
-          color="#e5e7eb"
+          position={[0, 0.8, 0]}
+          fontSize={0.14}
+          color="#ffffff"
           anchorX="center"
           anchorY="middle"
+          outlineWidth={0.015}
+          outlineColor="#000000"
         >
           {neuron.title}
         </Text>

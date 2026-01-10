@@ -1,9 +1,28 @@
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useLoader } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
+import * as THREE from 'three';
 import { Neuron } from './Neuron';
 import { Connection } from './Connection';
 import { useGraphStore } from '../../store/graphStore';
 import { useForceLayout } from '../../hooks/useForceLayout';
+import brainImage from '../../assets/brain-background.jpg';
+
+// Brain backdrop component
+function BrainBackdrop() {
+  const texture = useLoader(THREE.TextureLoader, brainImage);
+
+  return (
+    <mesh position={[0, 0, -8]} rotation={[0, 0, 0]}>
+      <planeGeometry args={[20, 15]} />
+      <meshBasicMaterial
+        map={texture}
+        transparent
+        opacity={0.15}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
 
 export function NeuralScene() {
   const neurons = useGraphStore((state) => state.neurons);
@@ -18,6 +37,9 @@ export function NeuralScene() {
         camera={{ position: [0, 0, 10], fov: 75 }}
         gl={{ antialias: true, alpha: false }}
       >
+        {/* Brain image backdrop */}
+        <BrainBackdrop />
+
         {/* Background stars for depth */}
         <Stars
           radius={100}

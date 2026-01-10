@@ -1,5 +1,4 @@
 import { useRef, useMemo } from 'react';
-import { Line } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useUIStore } from '../../store/uiStore';
@@ -11,7 +10,7 @@ interface ConnectionProps {
 }
 
 export function Connection({ connection }: ConnectionProps) {
-  const lineRef = useRef<THREE.Line>(null);
+  const pulseRef = useRef<THREE.Mesh>(null);
 
   const getNeuronById = useGraphStore((state) => state.getNeuronById);
   const hoveredNeuronId = useUIStore((state) => state.hoveredNeuronId);
@@ -20,47 +19,18 @@ export function Connection({ connection }: ConnectionProps) {
   const sourceNeuron = getNeuronById(connection.sourceId);
   const targetNeuron = getNeuronById(connection.targetId);
 
-  // Determine if this connection should be highlighted
   const isHighlighted =
     hoveredNeuronId === connection.sourceId ||
     hoveredNeuronId === connection.targetId ||
     selectedNeuronId === connection.sourceId ||
     selectedNeuronId === connection.targetId;
 
-  // Get color based on weight
-  const color = useMemo(() => {
-    const weight = connection.weight;
-    if (weight < 0.3) {
-      return '#3b82f6'; // blue for weak
-    } else if (weight < 0.7) {
-      return '#8b5cf6'; // purple for medium
-    } else {
-      return '#ec4899'; // pink for strong
-    }
+  const baseColor = '#4488ff'; // Blue color for connections
+  const pulseColor = '#ff8844'; // Orange color for electrical pulse
+
+  const thickness = useMemo(() => {
+    return connection.weight * 0.03 + 0.01;
   }, [connection.weight]);
-
-  // Calculate opacity based on weight
-  const opacity = useMemo(() => {
-    const weight = connection.weight;
-    if (weight < 0.3) return isHighlighted ? 0.6 : 0.3;
-    if (weight < 0.7) return isHighlighted ? 0.9 : 0.6;
-    return isHighlighted ? 1.0 : 0.9;
-  }, [connection.weight, isHighlighted]);
-
-  // Calculate line width based on weight
-  const lineWidth = useMemo(() => {
-    const baseWidth = connection.weight * 3 + 1;
-    return isHighlighted ? baseWidth * 1.5 : baseWidth;
-  }, [connection.weight, isHighlighted]);
-
-  // Animate pulse effect
-  useFrame((state) => {
-    if (lineRef.current && isHighlighted) {
-      const material = lineRef.current.material as THREE.LineBasicMaterial;
-      const pulse = Math.sin(state.clock.elapsedTime * 3) * 0.2 + 0.8;
-      material.opacity = opacity * pulse;
-    }
-  });
 
   if (!sourceNeuron || !targetNeuron) {
     return null;
@@ -69,19 +39,71 @@ export function Connection({ connection }: ConnectionProps) {
   const sourcePos = sourceNeuron.position || { x: 0, y: 0, z: 0 };
   const targetPos = targetNeuron.position || { x: 0, y: 0, z: 0 };
 
-  const points = [
-    new THREE.Vector3(sourcePos.x, sourcePos.y, sourcePos.z),
-    new THREE.Vector3(targetPos.x, targetPos.y, targetPos.z),
-  ];
+  const start = new THREE.Vector3(sourcePos.x, sourcePos.y, sourcePos.z);
+  const end = new THREE.Vector3(targetPos.x, targetPos.y, targetPos.z);
+  const direction = new THREE.Vector3().subVectors(end, start);
+  const length = direction.length();
+
+  // Animate electrical pulse traveling along connection
+  useFrame((state) => {
+    if (pulseRef.current) {
+      const speed = 1.0 + connection.weight * 1.5;
+      const progress = (state.clock.elapsedTime * speed * 0.3) % 1;
+
+      const pulsePosition = new THREE.Vector3().lerpVectors(start, end, progress);
+      pulseRef.current.position.copy(pulsePosition);
+
+      const pulseSize = Math.sin(progress * Math.PI) * 0.08 + 0.05;
+      pulseRef.current.scale.setScalar(pulseSize * (isHighlighted ? 2.0 : 1.5));
+
+      const material = pulseRef.current.material as THREE.MeshBasicMaterial;
+      material.opacity = Math.sin(progress * Math.PI) * (isHighlighted ? 1.0 : 0.8);
+    }
+  });
+
+  const quaternion = new THREE.Quaternion();
+  const axis = new THREE.Vector3(0, 1, 0);
+  quaternion.setFromUnitVectors(axis, direction.clone().normalize());
+
+  const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
 
   return (
-    <Line
-      ref={lineRef}
-      points={points}
-      color={color}
-      lineWidth={lineWidth}
-      transparent
-      opacity={opacity}
-    />
+    <group>
+      {/* Simple blue connection line */}
+      <mesh position={midpoint} quaternion={quaternion}>
+        <cylinderGeometry args={[thickness, thickness, length, 8]} />
+        <meshStandardMaterial
+          color={baseColor}
+          emissive={baseColor}
+          emissiveIntensity={isHighlighted ? 0.8 : 0.4}
+          transparent
+          opacity={0.7}
+          roughness={0.4}
+          metalness={0.3}
+        />
+      </mesh>
+
+      {/* Orange electrical pulse traveling along connection */}
+      <mesh ref={pulseRef}>
+        <sphereGeometry args={[0.08, 16, 16]} />
+        <meshBasicMaterial
+          color={pulseColor}
+          transparent
+          opacity={0}
+        />
+      </mesh>
+
+      {/* Glow trail behind pulse when highlighted */}
+      {isHighlighted && (
+        <mesh ref={pulseRef}>
+          <sphereGeometry args={[0.12, 16, 16]} />
+          <meshBasicMaterial
+            color={pulseColor}
+            transparent
+            opacity={0.2}
+          />
+        </mesh>
+      )}
+    </group>
   );
 }
