@@ -1,0 +1,46 @@
+.reset-view-button {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(99, 102, 241, 0.9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+.reset-view-button:hover {
+  background: rgba(79, 70, 229, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.reset-view-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.reset-view-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 640px) {
+  .reset-view-button span {
+    display: none;
+  }
+
+  .reset-view-button {
+    padding: 0.75rem;
+  }
+}

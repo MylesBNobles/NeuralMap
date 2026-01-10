@@ -6,6 +6,7 @@ interface UIStore {
   hoveredNeuronId: string | null;
   isCreatingConnection: boolean;
   connectionSourceId: string | null;
+  isDraggingNeuron: boolean;
 
   // Actions
   selectNeuron: (id: string | null) => void;
@@ -14,6 +15,7 @@ interface UIStore {
   closePanel: () => void;
   startConnectionMode: (sourceId: string) => void;
   endConnectionMode: () => void;
+  setDraggingNeuron: (isDragging: boolean) => void;
 }
 
 export const useUIStore = create<UIStore>((set) => ({
@@ -22,6 +24,7 @@ export const useUIStore = create<UIStore>((set) => ({
   hoveredNeuronId: null,
   isCreatingConnection: false,
   connectionSourceId: null,
+  isDraggingNeuron: false,
 
   selectNeuron: (id) =>
     set({
@@ -55,5 +58,10 @@ export const useUIStore = create<UIStore>((set) => ({
     set({
       isCreatingConnection: false,
       connectionSourceId: null,
+    }),
+
+  setDraggingNeuron: (isDragging) =>
+    set({
+      isDraggingNeuron: isDragging,
     }),
 }));
