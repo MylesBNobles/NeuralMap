@@ -11,6 +11,8 @@ interface ConnectionProps {
 
 export function Connection({ connection }: ConnectionProps) {
   const pulseRef = useRef<THREE.Mesh>(null);
+  const glowRef = useRef<THREE.Mesh>(null);
+  const brightGlowRef = useRef<THREE.Mesh>(null);
 
   const getNeuronById = useGraphStore((state) => state.getNeuronById);
   const hoveredNeuronId = useUIStore((state) => state.hoveredNeuronId);
@@ -44,20 +46,50 @@ export function Connection({ connection }: ConnectionProps) {
   const direction = new THREE.Vector3().subVectors(end, start);
   const length = direction.length();
 
-  // Animate electrical pulse traveling along connection
+  // Animate electrical pulse traveling along connection - only when highlighted
   useFrame((state) => {
+    if (!isHighlighted) {
+      // Hide all pulses when not highlighted
+      if (pulseRef.current) {
+        const material = pulseRef.current.material as THREE.MeshBasicMaterial;
+        material.opacity = 0;
+      }
+      if (glowRef.current) {
+        const glowMaterial = glowRef.current.material as THREE.MeshBasicMaterial;
+        glowMaterial.opacity = 0;
+      }
+      return;
+    }
+
+    const speed = 1.0 + connection.weight * 1.5;
+    const progress = (state.clock.elapsedTime * speed * 0.3) % 1;
+    const pulsePosition = new THREE.Vector3().lerpVectors(start, end, progress);
+
+    // Animate main pulse
     if (pulseRef.current) {
-      const speed = 1.0 + connection.weight * 1.5;
-      const progress = (state.clock.elapsedTime * speed * 0.3) % 1;
-
-      const pulsePosition = new THREE.Vector3().lerpVectors(start, end, progress);
       pulseRef.current.position.copy(pulsePosition);
-
-      const pulseSize = Math.sin(progress * Math.PI) * 0.08 + 0.05;
-      pulseRef.current.scale.setScalar(pulseSize * (isHighlighted ? 2.0 : 1.5));
-
+      const pulseSize = Math.sin(progress * Math.PI) * 0.2 + 0.15;
+      pulseRef.current.scale.setScalar(pulseSize * 2.5);
       const material = pulseRef.current.material as THREE.MeshBasicMaterial;
-      material.opacity = Math.sin(progress * Math.PI) * (isHighlighted ? 1.0 : 0.8);
+      material.opacity = Math.sin(progress * Math.PI) * 1.0;
+    }
+
+    // Animate glow layer
+    if (glowRef.current) {
+      glowRef.current.position.copy(pulsePosition);
+      const glowSize = Math.sin(progress * Math.PI) * 0.25 + 0.2;
+      glowRef.current.scale.setScalar(glowSize * 2.5);
+      const glowMaterial = glowRef.current.material as THREE.MeshBasicMaterial;
+      glowMaterial.opacity = Math.sin(progress * Math.PI) * 0.6;
+    }
+
+    // Animate bright glow when highlighted
+    if (brightGlowRef.current) {
+      brightGlowRef.current.position.copy(pulsePosition);
+      const brightSize = Math.sin(progress * Math.PI) * 0.3 + 0.25;
+      brightGlowRef.current.scale.setScalar(brightSize * 2.5);
+      const brightMaterial = brightGlowRef.current.material as THREE.MeshBasicMaterial;
+      brightMaterial.opacity = Math.sin(progress * Math.PI) * 0.3;
     }
   });
 
@@ -85,7 +117,7 @@ export function Connection({ connection }: ConnectionProps) {
 
       {/* Orange electrical pulse traveling along connection */}
       <mesh ref={pulseRef}>
-        <sphereGeometry args={[0.08, 16, 16]} />
+        <sphereGeometry args={[0.15, 16, 16]} />
         <meshBasicMaterial
           color={pulseColor}
           transparent
@@ -93,14 +125,24 @@ export function Connection({ connection }: ConnectionProps) {
         />
       </mesh>
 
-      {/* Glow trail behind pulse when highlighted */}
+      {/* Outer glow around pulse (always visible) */}
+      <mesh ref={glowRef}>
+        <sphereGeometry args={[0.25, 16, 16]} />
+        <meshBasicMaterial
+          color={pulseColor}
+          transparent
+          opacity={0}
+        />
+      </mesh>
+
+      {/* Extra bright glow when highlighted */}
       {isHighlighted && (
-        <mesh ref={pulseRef}>
-          <sphereGeometry args={[0.12, 16, 16]} />
+        <mesh ref={brightGlowRef}>
+          <sphereGeometry args={[0.35, 16, 16]} />
           <meshBasicMaterial
             color={pulseColor}
             transparent
-            opacity={0.2}
+            opacity={0}
           />
         </mesh>
       )}

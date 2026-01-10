@@ -262,14 +262,21 @@ button {
   background: transparent;
   color: #ef4444;
   border: none;
-  font-size: 1rem;
+  font-size: 1.1rem;
   cursor: pointer;
   padding: 0.25rem 0.5rem;
-  transition: color 0.2s;
+  transition: all 0.2s;
+  min-width: 28px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
 }
 
 .btn-remove:hover {
   color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
 }
 
 .btn-delete {
