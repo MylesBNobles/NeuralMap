@@ -1,0 +1,301 @@
+/* Backdrop */
+.side-panel-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+/* Panel */
+.side-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  max-width: 90vw;
+  height: 100vh;
+  background: #1a1a2e;
+  color: #e5e7eb;
+  padding: 2rem;
+  overflow-y: auto;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Close button */
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: #e5e7eb;
+}
+
+/* Title */
+.neuron-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  color: #818cf8;
+}
+
+.edit-title {
+  width: 100%;
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: #0a0a0f;
+  border: 2px solid #6366f1;
+  border-radius: 8px;
+  padding: 0.5rem;
+  color: #e5e7eb;
+  margin-bottom: 1rem;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: #374151;
+  margin: 1.5rem 0;
+}
+
+/* Sections */
+section {
+  margin-bottom: 1rem;
+}
+
+section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.description {
+  color: #d1d5db;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.edit-description {
+  width: 100%;
+  background: #0a0a0f;
+  border: 2px solid #6366f1;
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: #e5e7eb;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.empty-state {
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Links */
+.links-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem 0;
+}
+
+.links-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #374151;
+}
+
+.links-list li:last-child {
+  border-bottom: none;
+}
+
+.links-list a {
+  color: #60a5fa;
+  text-decoration: none;
+  flex: 1;
+}
+
+.links-list a:hover {
+  color: #93c5fd;
+  text-decoration: underline;
+}
+
+/* Connections */
+.connections-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem 0;
+}
+
+.connection-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #374151;
+}
+
+.connections-list li:last-child .connection-item {
+  border-bottom: none;
+}
+
+.connection-name {
+  flex: 1;
+  color: #d1d5db;
+}
+
+.connection-weight {
+  position: relative;
+  width: 80px;
+  height: 8px;
+  background: #374151;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.weight-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
+  border-radius: 4px;
+}
+
+.weight-value {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  min-width: 35px;
+  text-align: right;
+}
+
+/* Buttons */
+button {
+  font-family: inherit;
+}
+
+.btn-edit,
+.btn-add {
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-edit:hover,
+.btn-add:hover {
+  background: #4f46e5;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.btn-save {
+  flex: 1;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-save:hover {
+  background: #059669;
+}
+
+.btn-cancel {
+  flex: 1;
+  background: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #4b5563;
+}
+
+.btn-remove {
+  background: transparent;
+  color: #ef4444;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  transition: color 0.2s;
+}
+
+.btn-remove:hover {
+  color: #dc2626;
+}
+
+.btn-delete {
+  width: 100%;
+  background: #1a1a2e;
+  color: #ef4444;
+  border: 2px solid #ef4444;
+  border-radius: 6px;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-delete:hover {
+  background: #ef4444;
+  color: white;
+}
+
+/* Metadata */
+.metadata {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.metadata p {
+  margin: 0.25rem 0;
+}
