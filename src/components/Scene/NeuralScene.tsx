@@ -1,7 +1,6 @@
 import { useRef } from 'react';
-import { Canvas, useLoader } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
-import * as THREE from 'three';
 import { Neuron } from './Neuron';
 import { Connection } from './Connection';
 import { useGraphStore } from '../../store/graphStore';
@@ -9,23 +8,6 @@ import { useUIStore } from '../../store/uiStore';
 import { useForceLayout } from '../../hooks/useForceLayout';
 import { ResetViewButton } from '../UI/ResetViewButton';
 import brainImage from '../../assets/brain-background.jpg';
-
-// Brain backdrop component
-function BrainBackdrop() {
-  const texture = useLoader(THREE.TextureLoader, brainImage);
-
-  return (
-    <mesh position={[0, 0, -8]} rotation={[0, 0, 0]}>
-      <planeGeometry args={[20, 15]} />
-      <meshBasicMaterial
-        map={texture}
-        transparent
-        opacity={0.15}
-        depthWrite={false}
-      />
-    </mesh>
-  );
-}
 
 export function NeuralScene() {
   const neurons = useGraphStore((state) => state.neurons);
@@ -46,15 +28,51 @@ export function NeuralScene() {
   };
 
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#0a0a0f' }}>
+    <div style={{ width: '100vw', height: '100vh', background: '#000000' }}>
+      {/* Logo in top-left corner */}
+      <div
+        style={{
+          position: 'fixed',
+          top: '1.5rem',
+          left: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          zIndex: 100,
+        }}
+      >
+        <img
+          src={brainImage}
+          alt="Neural OS Logo"
+          style={{
+            width: '50px',
+            height: '50px',
+            objectFit: 'cover',
+            borderRadius: '10px',
+            opacity: 0.9,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+          }}
+        />
+        <h1
+          style={{
+            fontSize: '1.75rem',
+            fontWeight: 700,
+            color: '#5EC9F3',
+            margin: 0,
+            textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)',
+            letterSpacing: '0.5px',
+          }}
+        >
+          Neural OS
+        </h1>
+      </div>
+
       <ResetViewButton onReset={handleResetView} />
 
       <Canvas
         camera={{ position: [0, 0, 10], fov: 75 }}
         gl={{ antialias: true, alpha: false }}
       >
-        {/* Brain image backdrop */}
-        <BrainBackdrop />
 
         {/* Background stars for depth */}
         <Stars
@@ -68,10 +86,10 @@ export function NeuralScene() {
         />
 
         {/* Lighting */}
-        <ambientLight intensity={0.4} />
-        <pointLight position={[10, 10, 10]} intensity={0.7} color="#818cf8" />
-        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#8b5cf6" />
-        <pointLight position={[0, 15, 5]} intensity={0.3} color="#60a5fa" />
+        <ambientLight intensity={0.3} />
+        <pointLight position={[10, 10, 10]} intensity={0.7} color="#5EC9F3" />
+        <pointLight position={[-10, -10, -10]} intensity={0.4} color="#2A9FD6" />
+        <pointLight position={[0, 12, 6]} intensity={0.3} color="#7FD9F7" />
 
         {/* Camera controls */}
         <OrbitControls
