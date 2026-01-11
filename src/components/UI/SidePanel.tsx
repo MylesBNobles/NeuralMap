@@ -9,49 +9,105 @@ import './SidePanel.css';
 export function SidePanel() {
   const selectedNeuronId = useUIStore((state) => state.selectedNeuronId);
   const closePanel = useUIStore((state) => state.closePanel);
-  const getNeuronById = useGraphStore((state) => state.getNeuronById);
   const updateNeuron = useGraphStore((state) => state.updateNeuron);
   const deleteNeuron = useGraphStore((state) => state.deleteNeuron);
-  const getConnectionsByNeuronId = useGraphStore((state) => state.getConnectionsByNeuronId);
   const deleteConnection = useGraphStore((state) => state.deleteConnection);
+  const getNeuronById = useGraphStore((state) => state.getNeuronById);
+  const getConnectionsByNeuronId = useGraphStore((state) => state.getConnectionsByNeuronId);
 
-  const neuron = selectedNeuronId ? getNeuronById(selectedNeuronId) : null;
+  // Get all neurons to enable reactive updates
+  const neurons = useGraphStore((state) => state.neurons);
+
+  // Find the neuron from the reactive neurons array
+  const neuron = selectedNeuronId ? neurons.find(n => n.id === selectedNeuronId) : null;
   const connections = selectedNeuronId ? getConnectionsByNeuronId(selectedNeuronId) : [];
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editNodeType, setEditNodeType] = useState<NodeType>('Concept');
-  const [editTitle, setEditTitle] = useState('');
-  const [editDescription, setEditDescription] = useState('');
-  const [editKeyPoints, setEditKeyPoints] = useState<string[]>([]);
-  const [editConfidence, setEditConfidence] = useState<'New' | 'Shaky' | 'Solid' | 'Internalized'>('New');
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [editingKeyPoint, setEditingKeyPoint] = useState<number | null>(null);
+  const [editingConfidence, setEditingConfidence] = useState(false);
+
+  const [tempTitle, setTempTitle] = useState('');
+  const [tempDescription, setTempDescription] = useState('');
+  const [tempKeyPoint, setTempKeyPoint] = useState('');
+
   const [showAddConnection, setShowAddConnection] = useState(false);
 
   if (!neuron) return null;
 
-  const handleEdit = () => {
-    setEditNodeType(neuron.nodeType || 'Concept');
-    setEditTitle(neuron.title);
-    setEditDescription(neuron.description);
-    setEditKeyPoints(neuron.keyPoints || []);
-    setEditConfidence(neuron.confidence || 'New');
-    setIsEditing(true);
+  // Title handlers
+  const handleTitleClick = () => {
+    setTempTitle(neuron.title);
+    setEditingTitle(true);
   };
 
-  const handleSave = () => {
-    if (editTitle.trim()) {
-      updateNeuron(neuron.id, {
-        nodeType: editNodeType,
-        title: editTitle,
-        description: editDescription,
-        keyPoints: editKeyPoints.filter(kp => kp.trim()),
-        confidence: editConfidence,
-      });
-      setIsEditing(false);
+  const handleTitleSave = () => {
+    if (tempTitle.trim()) {
+      updateNeuron(neuron.id, { title: tempTitle.trim() });
+    }
+    setEditingTitle(false);
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleTitleSave();
+    } else if (e.key === 'Escape') {
+      setEditingTitle(false);
     }
   };
 
-  const handleCancel = () => {
-    setIsEditing(false);
+  // Description handlers
+  const handleDescriptionClick = () => {
+    setTempDescription(neuron.description);
+    setEditingDescription(true);
+  };
+
+  const handleDescriptionSave = () => {
+    updateNeuron(neuron.id, { description: tempDescription });
+    setEditingDescription(false);
+  };
+
+  const handleDescriptionKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && e.ctrlKey) {
+      handleDescriptionSave();
+    } else if (e.key === 'Escape') {
+      setEditingDescription(false);
+    }
+  };
+
+  // Key point handlers
+  const handleKeyPointClick = (index: number) => {
+    setTempKeyPoint(neuron.keyPoints[index]);
+    setEditingKeyPoint(index);
+  };
+
+  const handleKeyPointSave = () => {
+    if (editingKeyPoint !== null && tempKeyPoint.trim()) {
+      const newKeyPoints = [...neuron.keyPoints];
+      newKeyPoints[editingKeyPoint] = tempKeyPoint.trim();
+      updateNeuron(neuron.id, { keyPoints: newKeyPoints });
+    }
+    setEditingKeyPoint(null);
+  };
+
+  const handleKeyPointKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleKeyPointSave();
+    } else if (e.key === 'Escape') {
+      setEditingKeyPoint(null);
+    }
+  };
+
+  const handleAddKeyPoint = () => {
+    const newKeyPoints = [...(neuron.keyPoints || []), ''];
+    updateNeuron(neuron.id, { keyPoints: newKeyPoints });
+    setEditingKeyPoint(newKeyPoints.length - 1);
+    setTempKeyPoint('');
+  };
+
+  const handleRemoveKeyPoint = (index: number) => {
+    const newKeyPoints = neuron.keyPoints.filter((_, i) => i !== index);
+    updateNeuron(neuron.id, { keyPoints: newKeyPoints });
   };
 
   const handleDelete = () => {
@@ -59,22 +115,6 @@ export function SidePanel() {
       deleteNeuron(neuron.id);
       closePanel();
     }
-  };
-
-  const handleAddKeyPoint = () => {
-    if (editKeyPoints.length < 3) {
-      setEditKeyPoints([...editKeyPoints, '']);
-    }
-  };
-
-  const handleUpdateKeyPoint = (index: number, value: string) => {
-    const newKeyPoints = [...editKeyPoints];
-    newKeyPoints[index] = value;
-    setEditKeyPoints(newKeyPoints);
-  };
-
-  const handleRemoveKeyPoint = (index: number) => {
-    setEditKeyPoints(editKeyPoints.filter((_, i) => i !== index));
   };
 
   return (
@@ -89,121 +129,125 @@ export function SidePanel() {
           ✕
         </button>
 
-        {/* Node Type */}
-        <section>
-          <h2>Node Type</h2>
-          {isEditing ? (
-            <NodeTypeSelector
-              selectedType={editNodeType}
-              onTypeChange={setEditNodeType}
-            />
-          ) : (
-            <p className="node-type-display">{neuron.nodeType || 'Concept'}</p>
-          )}
-        </section>
+        {/* Node Type Selector - Always interactive */}
+        <NodeTypeSelector
+          selectedType={neuron.nodeType || 'Concept'}
+          onTypeChange={(type) => updateNeuron(neuron.id, { nodeType: type })}
+        />
 
         <div className="divider" />
 
-        {/* Title */}
-        {isEditing ? (
+        {/* Title - Click to edit */}
+        {editingTitle ? (
           <input
             type="text"
             className="edit-title"
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
+            value={tempTitle}
+            onChange={(e) => setTempTitle(e.target.value)}
+            onBlur={handleTitleSave}
+            onKeyDown={handleTitleKeyDown}
             autoFocus
           />
         ) : (
-          <h1 className="neuron-title">{neuron.title}</h1>
+          <h1 className="neuron-title editable" onClick={handleTitleClick}>
+            {neuron.title}
+          </h1>
         )}
 
         <div className="divider" />
 
-        {/* Description */}
+        {/* Description - Click to edit */}
         <section>
           <h2>Description</h2>
-          {isEditing ? (
+          {editingDescription ? (
             <textarea
               className="edit-description"
-              value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
+              value={tempDescription}
+              onChange={(e) => setTempDescription(e.target.value)}
+              onBlur={handleDescriptionSave}
+              onKeyDown={handleDescriptionKeyDown}
               rows={6}
+              autoFocus
             />
           ) : (
-            <p className="description">{neuron.description || 'No description'}</p>
+            <p
+              className={`description editable ${!neuron.description ? 'empty-state' : ''}`}
+              onClick={handleDescriptionClick}
+            >
+              {neuron.description || 'Click to add description'}
+            </p>
           )}
         </section>
 
-        {isEditing ? (
-          <div className="edit-actions">
-            <button className="btn-save" onClick={handleSave}>
-              Save
-            </button>
-            <button className="btn-cancel" onClick={handleCancel}>
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button className="btn-edit" onClick={handleEdit}>
-            Edit
-          </button>
-        )}
-
         <div className="divider" />
 
-        {/* Key Points */}
+        {/* Key Points - Click individual points to edit */}
         <section>
           <h2>Key Points</h2>
-          {isEditing ? (
-            <div className="key-points-edit">
-              {editKeyPoints.map((point, index) => (
-                <div key={index} className="key-point-input">
-                  <input
-                    type="text"
-                    value={point}
-                    onChange={(e) => handleUpdateKeyPoint(index, e.target.value)}
-                    placeholder={`Key point ${index + 1}`}
-                    maxLength={100}
-                  />
-                  <button
-                    className="btn-remove"
-                    onClick={() => handleRemoveKeyPoint(index)}
-                  >
-                    ✕
-                  </button>
-                </div>
+          {neuron.keyPoints && neuron.keyPoints.length > 0 ? (
+            <ul className="key-points-list">
+              {neuron.keyPoints.map((point, index) => (
+                <li key={index} className="key-point-item">
+                  {editingKeyPoint === index ? (
+                    <div className="key-point-input-inline">
+                      <input
+                        type="text"
+                        value={tempKeyPoint}
+                        onChange={(e) => setTempKeyPoint(e.target.value)}
+                        onBlur={handleKeyPointSave}
+                        onKeyDown={handleKeyPointKeyDown}
+                        placeholder={`Key point ${index + 1}`}
+                        maxLength={100}
+                        autoFocus
+                      />
+                      <button
+                        className="btn-remove"
+                        onClick={() => handleRemoveKeyPoint(index)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="key-point-display">
+                      <span className="editable" onClick={() => handleKeyPointClick(index)}>
+                        {point}
+                      </span>
+                      <button
+                        className="btn-remove"
+                        onClick={() => handleRemoveKeyPoint(index)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </li>
               ))}
-              {editKeyPoints.length < 3 && (
-                <button className="btn-add" onClick={handleAddKeyPoint}>
-                  + Add Key Point
-                </button>
-              )}
-            </div>
+            </ul>
           ) : (
-            <>
-              {neuron.keyPoints && neuron.keyPoints.length > 0 ? (
-                <ul className="key-points-list">
-                  {neuron.keyPoints.map((point, index) => (
-                    <li key={index}>{point}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="empty-state">No key points</p>
-              )}
-            </>
+            <p className="empty-state">No key points</p>
+          )}
+          {(neuron.keyPoints?.length || 0) < 3 && (
+            <button className="btn-add-small" onClick={handleAddKeyPoint}>
+              + Add Key Point
+            </button>
           )}
         </section>
 
         <div className="divider" />
 
-        {/* Confidence */}
+        {/* Confidence - Click to edit */}
         <section>
           <h2>Confidence</h2>
-          {isEditing ? (
+          {editingConfidence ? (
             <select
               className="confidence-select"
-              value={editConfidence}
-              onChange={(e) => setEditConfidence(e.target.value as 'New' | 'Shaky' | 'Solid' | 'Internalized')}
+              value={neuron.confidence || 'New'}
+              onChange={(e) => {
+                updateNeuron(neuron.id, { confidence: e.target.value as 'New' | 'Shaky' | 'Solid' | 'Internalized' });
+                setEditingConfidence(false);
+              }}
+              onBlur={() => setEditingConfidence(false)}
+              autoFocus
             >
               <option value="New">New</option>
               <option value="Shaky">Shaky</option>
@@ -211,7 +255,9 @@ export function SidePanel() {
               <option value="Internalized">Internalized</option>
             </select>
           ) : (
-            <p className="confidence-value">{neuron.confidence || 'New'}</p>
+            <p className="confidence-value editable" onClick={() => setEditingConfidence(true)}>
+              {neuron.confidence || 'New'}
+            </p>
           )}
         </section>
 
@@ -225,7 +271,7 @@ export function SidePanel() {
               {connections.map((conn) => {
                 const otherNeuronId =
                   conn.sourceId === neuron.id ? conn.targetId : conn.sourceId;
-                const otherNeuron = getNeuronById(otherNeuronId);
+                const otherNeuron = neurons.find(n => n.id === otherNeuronId);
                 if (!otherNeuron) return null;
 
                 return (

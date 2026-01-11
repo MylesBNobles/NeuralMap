@@ -78,14 +78,13 @@ export function CreateNodeButton() {
           <div className="create-node-modal">
             <h2>Create New Node</h2>
 
-            {/* Node Type */}
-            <div className="form-group">
-              <label>Node Type</label>
-              <NodeTypeSelector
-                selectedType={nodeType}
-                onTypeChange={setNodeType}
-              />
-            </div>
+            {/* Node Type Selector - No label */}
+            <NodeTypeSelector
+              selectedType={nodeType}
+              onTypeChange={setNodeType}
+            />
+
+            <div style={{ height: '1rem' }} />
 
             {/* Title */}
             <div className="form-group">

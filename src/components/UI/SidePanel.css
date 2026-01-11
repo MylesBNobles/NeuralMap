@@ -62,6 +62,19 @@
   color: #818cf8;
 }
 
+.neuron-title.editable {
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 0.25rem;
+  margin-left: -0.25rem;
+  border-radius: 4px;
+}
+
+.neuron-title.editable:hover {
+  color: #a5b4fc;
+  background: rgba(129, 140, 248, 0.1);
+}
+
 .edit-title {
   width: 100%;
   font-size: 1.75rem;
@@ -99,6 +112,18 @@ section h2 {
   color: #d1d5db;
   line-height: 1.6;
   white-space: pre-wrap;
+}
+
+.description.editable {
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  border-radius: 6px;
+}
+
+.description.editable:hover {
+  background: rgba(94, 201, 243, 0.05);
 }
 
 .edit-description {
@@ -297,26 +322,14 @@ button {
   color: white;
 }
 
-/* Node Type Display */
-.node-type-display {
-  display: inline-block;
-  background: linear-gradient(135deg, rgba(94, 201, 243, 0.1), rgba(94, 201, 243, 0.15));
-  border: 2px solid #5EC9F3;
-  border-radius: 20px;
-  padding: 0.5rem 1rem;
-  color: #5EC9F3;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
 /* Key Points */
 .key-points-list {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 0 0 0.75rem 0;
 }
 
-.key-points-list li {
+.key-point-item {
   position: relative;
   padding-left: 1.5rem;
   padding-top: 0.5rem;
@@ -325,14 +338,53 @@ button {
   line-height: 1.5;
 }
 
-.key-points-list li::before {
+.key-point-item::before {
   content: '•';
   position: absolute;
   left: 0;
+  top: 0.5rem;
   color: #5EC9F3;
   font-size: 1.2rem;
   font-weight: bold;
   line-height: 1.5;
+}
+
+.key-point-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.key-point-display span.editable {
+  flex: 1;
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 0.25rem 0.5rem;
+  margin: -0.25rem -0.5rem;
+  border-radius: 4px;
+}
+
+.key-point-display span.editable:hover {
+  background: rgba(94, 201, 243, 0.05);
+}
+
+.key-point-input-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: -0.5rem;
+}
+
+.key-point-input-inline input {
+  flex: 1;
+  background: #0a0a0f;
+  border: 2px solid #5EC9F3;
+  border-radius: 8px;
+  padding: 0.5rem;
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(94, 201, 243, 0.1);
 }
 
 .key-points-edit {
@@ -431,6 +483,33 @@ button {
 .confidence-value {
   border-color: #5EC9F3;
   background: linear-gradient(135deg, rgba(94, 201, 243, 0.05), rgba(94, 201, 243, 0.1));
+}
+
+.confidence-value.editable {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confidence-value.editable:hover {
+  border-color: #7fd9f7;
+  background: linear-gradient(135deg, rgba(94, 201, 243, 0.1), rgba(94, 201, 243, 0.15));
+  transform: translateY(-1px);
+}
+
+.btn-add-small {
+  background: transparent;
+  color: #5EC9F3;
+  border: none;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+}
+
+.btn-add-small:hover {
+  color: #7fd9f7;
 }
 
 /* Metadata */

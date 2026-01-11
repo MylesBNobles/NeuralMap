@@ -2,6 +2,7 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  margin-bottom: 0.5rem;
 }
 
 .node-type-pill {
@@ -32,8 +33,16 @@
 }
 
 .node-type-pill:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  cursor: default;
+}
+
+.node-type-pill:disabled:not(.selected) {
+  opacity: 0.6;
+}
+
+.node-type-pill:disabled.selected {
+  opacity: 1;
+  cursor: default;
 }
 
 .node-type-label {
