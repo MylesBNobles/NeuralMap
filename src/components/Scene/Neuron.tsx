@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { useThree } from '@react-three/fiber';
 import { Billboard, Text } from '@react-three/drei';
 import * as THREE from 'three';
@@ -26,12 +26,57 @@ export function Neuron({ neuron }: NeuronProps) {
   const selectNeuron = useUIStore((state) => state.selectNeuron);
   const setDraggingNeuron = useUIStore((state) => state.setDraggingNeuron);
   const updateNeuron = useGraphStore((state) => state.updateNeuron);
+  const allConnections = useGraphStore((state) => state.connections);
 
   const isSelected = selectedNeuronId === neuron.id;
   const isHighlighted = hoveredNeuronId === neuron.id || isSelected;
   const dotScale = isHovered ? 0.28 : 0.24;
   const labelScale = isHovered ? 1.12 : 1;
   const labelFontSize = isHovered ? 0.26 : 0.22;
+
+  const focusedNeuronId = hoveredNeuronId ?? selectedNeuronId;
+
+  // Calculate distance from focused neuron using BFS
+  const nodeDistance = useMemo(() => {
+    if (!focusedNeuronId || focusedNeuronId === neuron.id) return 0;
+
+    const adjacency = new Map<string, string[]>();
+    allConnections.forEach((conn) => {
+      const { sourceId, targetId } = conn;
+      if (!adjacency.has(sourceId)) adjacency.set(sourceId, []);
+      if (!adjacency.has(targetId)) adjacency.set(targetId, []);
+      adjacency.get(sourceId)!.push(targetId);
+      adjacency.get(targetId)!.push(sourceId);
+    });
+
+    const distances = new Map<string, number>();
+    const queue: string[] = [focusedNeuronId];
+    distances.set(focusedNeuronId, 0);
+
+    while (queue.length) {
+      const current = queue.shift()!;
+      const nextDistance = (distances.get(current) ?? 0) + 1;
+      const neighbors = adjacency.get(current) ?? [];
+      neighbors.forEach((neighbor) => {
+        if (!distances.has(neighbor)) {
+          distances.set(neighbor, nextDistance);
+          queue.push(neighbor);
+        }
+      });
+    }
+
+    return distances.get(neuron.id) ?? Infinity;
+  }, [allConnections, focusedNeuronId, neuron.id]);
+
+  // Calculate opacity based on distance
+  const nodeOpacity = useMemo(() => {
+    if (!focusedNeuronId) return 1.0;
+    if (nodeDistance === 0) return 1.0;
+    if (nodeDistance === 1) return 0.9;
+    if (nodeDistance === 2) return 0.4;
+    if (nodeDistance >= 3) return 0.15;
+    return 1.0;
+  }, [focusedNeuronId, nodeDistance]);
 
   const handlePointerOver = () => {
     if (!isDragging) {
@@ -153,7 +198,7 @@ export function Neuron({ neuron }: NeuronProps) {
           <meshBasicMaterial
             color="#FFFFFF"
             transparent
-            opacity={isHighlighted ? 1.0 : 0.95}
+            opacity={isHighlighted ? nodeOpacity : nodeOpacity * 0.95}
             depthWrite={false}
             depthTest={false}
           />
@@ -166,7 +211,7 @@ export function Neuron({ neuron }: NeuronProps) {
         <meshBasicMaterial
           color="#000000"
           transparent
-          opacity={0.75}
+          opacity={0.75 * nodeOpacity}
         />
       </mesh>
 
@@ -181,7 +226,8 @@ export function Neuron({ neuron }: NeuronProps) {
         anchorY="middle"
         outlineWidth={0.06}
         outlineColor="#000000"
-        outlineOpacity={1.0}
+        outlineOpacity={nodeOpacity}
+        fillOpacity={nodeOpacity}
       >
         {neuron.title}
       </Text>

@@ -19,7 +19,7 @@ export function Connection({ connection }: ConnectionProps) {
 
   const focusedNeuronId = hoveredNeuronId ?? selectedNeuronId;
 
-  const baseColor = '#5EC9F3';
+  const baseColor = '#FFFFFF';
   const accentColor = '#2A9FD6';
   const highlightColor = '#FF9A3C';
 
@@ -57,32 +57,42 @@ export function Connection({ connection }: ConnectionProps) {
     return distances;
   }, [allConnections, focusedNeuronId]);
 
-  const highlightStrength = useMemo(() => {
-    if (!focusedNeuronId) return 0;
-    const sourceDistance = distanceMap.get(connection.sourceId);
-    const targetDistance = distanceMap.get(connection.targetId);
-    const minDistance = Math.min(
-      sourceDistance ?? Infinity,
-      targetDistance ?? Infinity
-    );
-    if (!Number.isFinite(minDistance)) return 0;
-    const maxFalloff = 4;
-    const falloff = Math.min(minDistance, maxFalloff);
-    return Math.max(0, 1 - falloff * 0.25);
+  // Calculate edge opacity, thickness, and color based on degrees
+  const { edgeOpacity, edgeThickness, isOrange } = useMemo(() => {
+    if (!focusedNeuronId) {
+      return { edgeOpacity: 0.55, edgeThickness: 1.0, isOrange: false };
+    }
+
+    const sourceDistance = distanceMap.get(connection.sourceId) ?? Infinity;
+    const targetDistance = distanceMap.get(connection.targetId) ?? Infinity;
+
+    // Edge between Degree 0 ↔ Degree 1
+    if ((sourceDistance === 0 && targetDistance === 1) || (sourceDistance === 1 && targetDistance === 0)) {
+      return { edgeOpacity: 1.0, edgeThickness: 1.3, isOrange: true };
+    }
+
+    // Edges involving Degree 2
+    if (sourceDistance === 2 || targetDistance === 2) {
+      return { edgeOpacity: 0.4, edgeThickness: 1.0, isOrange: true };
+    }
+
+    // All others (Degree 3+)
+    return { edgeOpacity: 0.15, edgeThickness: 1.0, isOrange: false };
   }, [connection.sourceId, connection.targetId, distanceMap, focusedNeuronId]);
 
-  const isHighlighted = highlightStrength > 0;
   const lineColor = useMemo(() => {
-    const base = new THREE.Color(baseColor);
-    const highlight = new THREE.Color(highlightColor);
-    return base.lerp(highlight, highlightStrength);
-  }, [baseColor, highlightColor, highlightStrength]);
+    if (isOrange) {
+      return new THREE.Color(highlightColor);
+    }
+    return new THREE.Color(baseColor);
+  }, [baseColor, highlightColor, isOrange]);
 
   const glowColor = useMemo(() => {
-    const base = new THREE.Color(accentColor);
-    const highlight = new THREE.Color(highlightColor);
-    return base.lerp(highlight, highlightStrength * 0.9);
-  }, [accentColor, highlightColor, highlightStrength]);
+    if (isOrange) {
+      return new THREE.Color(highlightColor).multiplyScalar(0.8);
+    }
+    return new THREE.Color(accentColor);
+  }, [accentColor, highlightColor, isOrange]);
 
   if (!sourceNeuron || !targetNeuron) {
     return null;
@@ -115,24 +125,24 @@ export function Connection({ connection }: ConnectionProps) {
     <group>
       {/* Soft glow layer */}
       <mesh renderOrder={0}>
-        <tubeGeometry args={[curve, 48, thickness * 2.2, 8, false]} />
+        <tubeGeometry args={[curve, 48, thickness * edgeThickness * 2.2, 8, false]} />
         <meshBasicMaterial
           color={glowColor}
           transparent
-          opacity={isHighlighted ? 0.35 * highlightStrength + 0.1 : 0.12}
+          opacity={edgeOpacity * 0.3}
           depthWrite={false}
         />
       </mesh>
 
       {/* Core connection line */}
       <mesh renderOrder={1}>
-        <tubeGeometry args={[curve, 48, thickness, 12, false]} />
+        <tubeGeometry args={[curve, 48, thickness * edgeThickness, 12, false]} />
         <meshStandardMaterial
           color={lineColor}
           emissive={lineColor}
-          emissiveIntensity={isHighlighted ? 0.6 + highlightStrength * 0.7 : 0.6}
+          emissiveIntensity={isOrange ? 0.8 : 0.6}
           transparent
-          opacity={isHighlighted ? 0.65 * highlightStrength + 0.35 : 0.55}
+          opacity={edgeOpacity}
           roughness={0.35}
           metalness={0.2}
           depthWrite={false}
