@@ -175,10 +175,11 @@ export function Neuron({ neuron }: NeuronProps) {
         position={[0, 0.6, 0.02]}
         fontSize={labelFontSize}
         scale={[labelScale, labelScale, 1]}
+        fontWeight="bold"
         color={isHighlighted ? "#ffffff" : "#e5e7eb"}
         anchorX="center"
         anchorY="middle"
-        outlineWidth={0.035}
+        outlineWidth={0.06}
         outlineColor="#000000"
         outlineOpacity={1.0}
       >
