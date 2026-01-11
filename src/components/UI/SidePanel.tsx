@@ -68,8 +68,11 @@ export function SidePanel() {
   };
 
   const handleDescriptionKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.ctrlKey) {
+    if (e.key === 'Enter' && !e.ctrlKey) {
+      e.preventDefault();
       handleDescriptionSave();
+    } else if (e.key === 'Enter' && e.ctrlKey) {
+      // Allow Ctrl+Enter to create new line (default textarea behavior)
     } else if (e.key === 'Escape') {
       setEditingDescription(false);
     }
@@ -212,12 +215,6 @@ export function SidePanel() {
                       <span className="editable" onClick={() => handleKeyPointClick(index)}>
                         {point}
                       </span>
-                      <button
-                        className="btn-remove"
-                        onClick={() => handleRemoveKeyPoint(index)}
-                      >
-                        ✕
-                      </button>
                     </div>
                   )}
                 </li>

@@ -285,7 +285,7 @@ button {
 
 .btn-remove {
   background: transparent;
-  color: #ef4444;
+  color: #9ca3af;
   border: none;
   font-size: 1.1rem;
   cursor: pointer;
@@ -300,8 +300,8 @@ button {
 }
 
 .btn-remove:hover {
-  color: #dc2626;
-  background: rgba(239, 68, 68, 0.1);
+  color: #5EC9F3;
+  background: rgba(94, 201, 243, 0.1);
 }
 
 .btn-delete {
