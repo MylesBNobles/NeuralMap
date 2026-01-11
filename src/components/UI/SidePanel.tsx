@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useUIStore } from '../../store/uiStore';
 import { useGraphStore } from '../../store/graphStore';
 import { AddConnectionModal } from './AddConnectionModal';
+import { NodeTypeSelector } from './NodeTypeSelector';
+import type { NodeType } from '../../types';
 import './SidePanel.css';
 
 export function SidePanel() {
@@ -17,23 +19,32 @@ export function SidePanel() {
   const connections = selectedNeuronId ? getConnectionsByNeuronId(selectedNeuronId) : [];
 
   const [isEditing, setIsEditing] = useState(false);
+  const [editNodeType, setEditNodeType] = useState<NodeType>('Concept');
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editKeyPoints, setEditKeyPoints] = useState<string[]>([]);
+  const [editConfidence, setEditConfidence] = useState<'New' | 'Shaky' | 'Solid' | 'Internalized'>('New');
   const [showAddConnection, setShowAddConnection] = useState(false);
 
   if (!neuron) return null;
 
   const handleEdit = () => {
+    setEditNodeType(neuron.nodeType || 'Concept');
     setEditTitle(neuron.title);
     setEditDescription(neuron.description);
+    setEditKeyPoints(neuron.keyPoints || []);
+    setEditConfidence(neuron.confidence || 'New');
     setIsEditing(true);
   };
 
   const handleSave = () => {
     if (editTitle.trim()) {
       updateNeuron(neuron.id, {
+        nodeType: editNodeType,
         title: editTitle,
         description: editDescription,
+        keyPoints: editKeyPoints.filter(kp => kp.trim()),
+        confidence: editConfidence,
       });
       setIsEditing(false);
     }
@@ -50,21 +61,20 @@ export function SidePanel() {
     }
   };
 
-  const handleAddLink = () => {
-    const url = prompt('Enter URL:');
-    const title = prompt('Enter link title:');
-    if (url && title) {
-      updateNeuron(neuron.id, {
-        links: [...neuron.links, { url, title }],
-      });
+  const handleAddKeyPoint = () => {
+    if (editKeyPoints.length < 3) {
+      setEditKeyPoints([...editKeyPoints, '']);
     }
   };
 
-  const handleRemoveLink = (index: number) => {
-    const newLinks = neuron.links.filter((_, i) => i !== index);
-    updateNeuron(neuron.id, {
-      links: newLinks,
-    });
+  const handleUpdateKeyPoint = (index: number, value: string) => {
+    const newKeyPoints = [...editKeyPoints];
+    newKeyPoints[index] = value;
+    setEditKeyPoints(newKeyPoints);
+  };
+
+  const handleRemoveKeyPoint = (index: number) => {
+    setEditKeyPoints(editKeyPoints.filter((_, i) => i !== index));
   };
 
   return (
@@ -78,6 +88,21 @@ export function SidePanel() {
         <button className="close-button" onClick={closePanel}>
           ✕
         </button>
+
+        {/* Node Type */}
+        <section>
+          <h2>Node Type</h2>
+          {isEditing ? (
+            <NodeTypeSelector
+              selectedType={editNodeType}
+              onTypeChange={setEditNodeType}
+            />
+          ) : (
+            <p className="node-type-display">{neuron.nodeType || 'Concept'}</p>
+          )}
+        </section>
+
+        <div className="divider" />
 
         {/* Title */}
         {isEditing ? (
@@ -126,31 +151,68 @@ export function SidePanel() {
 
         <div className="divider" />
 
-        {/* Links */}
+        {/* Key Points */}
         <section>
-          <h2>Links</h2>
-          {neuron.links.length > 0 ? (
-            <ul className="links-list">
-              {neuron.links.map((link, index) => (
-                <li key={index}>
-                  <a href={link.url} target="_blank" rel="noopener noreferrer">
-                    {link.title}
-                  </a>
+          <h2>Key Points</h2>
+          {isEditing ? (
+            <div className="key-points-edit">
+              {editKeyPoints.map((point, index) => (
+                <div key={index} className="key-point-input">
+                  <input
+                    type="text"
+                    value={point}
+                    onChange={(e) => handleUpdateKeyPoint(index, e.target.value)}
+                    placeholder={`Key point ${index + 1}`}
+                    maxLength={100}
+                  />
                   <button
                     className="btn-remove"
-                    onClick={() => handleRemoveLink(index)}
+                    onClick={() => handleRemoveKeyPoint(index)}
                   >
                     ✕
                   </button>
-                </li>
+                </div>
               ))}
-            </ul>
+              {editKeyPoints.length < 3 && (
+                <button className="btn-add" onClick={handleAddKeyPoint}>
+                  + Add Key Point
+                </button>
+              )}
+            </div>
           ) : (
-            <p className="empty-state">No links</p>
+            <>
+              {neuron.keyPoints && neuron.keyPoints.length > 0 ? (
+                <ul className="key-points-list">
+                  {neuron.keyPoints.map((point, index) => (
+                    <li key={index}>{point}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="empty-state">No key points</p>
+              )}
+            </>
           )}
-          <button className="btn-add" onClick={handleAddLink}>
-            + Add Link
-          </button>
+        </section>
+
+        <div className="divider" />
+
+        {/* Confidence */}
+        <section>
+          <h2>Confidence</h2>
+          {isEditing ? (
+            <select
+              className="confidence-select"
+              value={editConfidence}
+              onChange={(e) => setEditConfidence(e.target.value as 'New' | 'Shaky' | 'Solid' | 'Internalized')}
+            >
+              <option value="New">New</option>
+              <option value="Shaky">Shaky</option>
+              <option value="Solid">Solid</option>
+              <option value="Internalized">Internalized</option>
+            </select>
+          ) : (
+            <p className="confidence-value">{neuron.confidence || 'New'}</p>
+          )}
         </section>
 
         <div className="divider" />

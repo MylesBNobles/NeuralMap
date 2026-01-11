@@ -1,18 +1,18 @@
+export type NodeType = 'Concept' | 'Principle' | 'Question';
+
 export interface Neuron {
   id: string;
+  nodeType: NodeType;
   title: string;
   description: string; // Markdown
   images: string[]; // Base64 or URLs
-  links: Link[];
+  keyPoints: string[]; // Max 3 bullet points
+  confidence: 'New' | 'Shaky' | 'Solid' | 'Internalized';
   position: { x: number; y: number; z: number } | null; // null = auto-positioned
   createdAt: number;
   modifiedAt: number;
 }
 
-export interface Link {
-  url: string;
-  title: string;
-}
 
 export interface Connection {
   id: string;

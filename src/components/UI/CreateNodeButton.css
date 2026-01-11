@@ -49,6 +49,8 @@
   transform: translate(-50%, -50%);
   width: 500px;
   max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
   background: #1a1a2e;
   border-radius: 12px;
   padding: 2rem;
@@ -157,4 +159,124 @@
 .btn-cancel-modal:hover {
   border-color: #6b7280;
   color: #e5e7eb;
+}
+
+/* Key Points in Modal */
+.create-node-modal .key-points-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.create-node-modal .key-point-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.create-node-modal .key-point-input input {
+  flex: 1;
+  background: #0a0a0f;
+  border: 2px solid #374151;
+  border-radius: 8px;
+  padding: 0.75rem;
+  padding-left: 2rem;
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.create-node-modal .key-point-input input:focus {
+  border-color: #5EC9F3;
+  box-shadow: 0 0 0 3px rgba(94, 201, 243, 0.1);
+}
+
+.create-node-modal .key-point-input input::placeholder {
+  color: #6b7280;
+}
+
+.create-node-modal .key-point-input::before {
+  content: '•';
+  position: absolute;
+  left: 0.75rem;
+  color: #5EC9F3;
+  font-size: 1.2rem;
+  font-weight: bold;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.create-node-modal .btn-remove {
+  background: transparent;
+  color: #ef4444;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  transition: all 0.2s;
+  min-width: 28px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.create-node-modal .btn-remove:hover {
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.btn-add-keypoint {
+  background: transparent;
+  color: #5EC9F3;
+  border: 2px dashed #374151;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.btn-add-keypoint:hover {
+  border-color: #5EC9F3;
+  background: rgba(94, 201, 243, 0.05);
+}
+
+/* Confidence Select in Modal */
+.create-node-modal .confidence-select {
+  width: 100%;
+  background: #0a0a0f;
+  border: 2px solid #374151;
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
+}
+
+.create-node-modal .confidence-select:hover {
+  border-color: #5EC9F3;
+}
+
+.create-node-modal .confidence-select:focus {
+  border-color: #5EC9F3;
+  box-shadow: 0 0 0 3px rgba(94, 201, 243, 0.1);
+}
+
+.create-node-modal .confidence-select option {
+  background: #1a1a2e;
+  color: #e5e7eb;
+  padding: 0.5rem;
 }
