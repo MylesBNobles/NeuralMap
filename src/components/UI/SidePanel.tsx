@@ -12,15 +12,18 @@ export function SidePanel() {
   const updateNeuron = useGraphStore((state) => state.updateNeuron);
   const deleteNeuron = useGraphStore((state) => state.deleteNeuron);
   const deleteConnection = useGraphStore((state) => state.deleteConnection);
-  const getNeuronById = useGraphStore((state) => state.getNeuronById);
-  const getConnectionsByNeuronId = useGraphStore((state) => state.getConnectionsByNeuronId);
 
-  // Get all neurons to enable reactive updates
+  // Get all neurons and connections to enable reactive updates
   const neurons = useGraphStore((state) => state.neurons);
+  const allConnections = useGraphStore((state) => state.connections);
 
   // Find the neuron from the reactive neurons array
   const neuron = selectedNeuronId ? neurons.find(n => n.id === selectedNeuronId) : null;
-  const connections = selectedNeuronId ? getConnectionsByNeuronId(selectedNeuronId) : [];
+
+  // Filter connections reactively from the connections array
+  const connections = selectedNeuronId
+    ? allConnections.filter(c => c.sourceId === selectedNeuronId || c.targetId === selectedNeuronId)
+    : [];
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
